@@ -1,9 +1,26 @@
+"""
+Radar quicklooks.
+Create quicklooks for radar data.
+
+@title: quicklooks.py
+@author: Valentin Louf <valentin.louf@monash.edu>
+@date: 2019
+@copyright: Valentin Louf 
+@institution: Monash University
+
+.. autosummary::
+    :toctree: generated/
+
+    plot_quicklook
+"""
 import os
+import glob
 import matplotlib
 matplotlib.use('Agg')
 
 import pyart
 import matplotlib.pyplot as pl
+import dask.bag as db
 
 
 def plot_quicklook(radar, gatefilter, radar_date, figure_path):
@@ -119,3 +136,16 @@ def plot_quicklook(radar, gatefilter, radar_date, figure_path):
     del gr  # Releasing memory
 
     return None
+
+
+def main():
+    # TODO:
+    # - List files (argparse input directory?).
+    # - Generate output directory (argparse output root directory?).
+    # - Use dask to multiproc figure creation.
+
+    return None
+
+
+if __name__ == '__main__':
+    main()
