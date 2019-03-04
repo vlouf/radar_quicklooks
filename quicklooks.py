@@ -5,25 +5,31 @@ Create quicklooks for radar data.
 @title: quicklooks.py
 @author: Valentin Louf <valentin.louf@monash.edu>
 @date: 2019
-@copyright: Valentin Louf 
+@copyright: Valentin Louf
 @institution: Monash University
 
 .. autosummary::
     :toctree: generated/
 
     plot_quicklook
+
+    # TODO:
+    # - List files (argparse input directory?).
+    # - Generate output directory (argparse output root directory?).
+    # - Multiproc figure creation.
 """
 import os
+import sys
 import glob
-import matplotlib
-matplotlib.use('Agg')
+import argparse
+import datetime
 
-import pyart
-import matplotlib.pyplot as pl
-import dask.bag as db
+import netCDF4
+from concurrent.futures import TimeoutError
+from pebble import ProcessPool, ProcessExpired
 
 
-def plot_quicklook(radar, gatefilter, radar_date, figure_path):
+def plot_quicklook(input_file, figure_path):
     """
     Plot figure of old/new radar parameters for checking purpose.
 
@@ -36,6 +42,14 @@ def plot_quicklook(radar, gatefilter, radar_date, figure_path):
         radar_date: datetime
             Datetime stucture of the radar data.
     """
+    import pyart
+    import matplotlib.pyplot as pl
+
+    radar = pyart.io.read(input_file)
+    gatefilter = pyart.filters.GateFilter(radar)
+    gatefilter.exclude_invalid('reflectivity')
+    radar_date = netCDF4.num2date(radar.time['data'][0], radar.time['units'])
+
     if figure_path is None:
         return None
     # Extracting year and date.
@@ -138,14 +152,92 @@ def plot_quicklook(radar, gatefilter, radar_date, figure_path):
     return None
 
 
-def main():
-    # TODO:
-    # - List files (argparse input directory?).
-    # - Generate output directory (argparse output root directory?).
-    # - Use dask to multiproc figure creation.
+def main(inargs):
+    input_file, figure_path = inargs
+    plot_quicklook(input_file, figure_path)
 
     return None
 
 
 if __name__ == '__main__':
-    main()
+    """
+    Global variables definition.
+    """
+    import matplotlib
+    matplotlib.use('Agg')
+
+    # Parse arguments
+    parser_description = "Processing of radar data from level 1a to level 1b."
+    parser = argparse.ArgumentParser(description=parser_description)
+    parser.add_argument(
+        '-s',
+        '--start-date',
+        dest='start_date',
+        default=None,
+        type=str,
+        help='Starting date.',
+        required=True)
+    parser.add_argument(
+        '-e',
+        '--end-date',
+        dest='end_date',
+        default=None,
+        type=str,
+        help='Ending date.',
+        required=True)
+    parser.add_argument(
+        '-i',
+        '--input',
+        dest='indir',
+        default="/g/data/hj10/cpol_level_1a/ppi/",
+        type=str,
+        help='Input directory containing radar data.')
+    parser.add_argument(
+        '-o',
+        '--output',
+        dest='outdir',
+        default="/g/data/hj10/cpol_level_1b/",
+        type=str,
+        help='Output directory for quicklooks.')
+
+    args = parser.parse_args()
+    START_DATE = args.start_date
+    END_DATE = args.end_date
+    INPATH = args.indir
+    OUTPATH = args.outdir
+
+    try:
+        start = datetime.datetime.strptime(START_DATE, "%Y%m%d")
+        end = datetime.datetime.strptime(END_DATE, "%Y%m%d")
+        if start > end:
+            raise ValueError('End date older than start date.')
+        date_range = [start + datetime.timedelta(days=x) for x in range(0, (end - start).days + 1, )]
+    except ValueError:
+        print("Invalid dates.")
+        sys.exit()
+
+    for day in date_range:
+        input_dir = os.path.join(INPATH, str(day.year), day.strftime("%Y%m%d"), "*.*")
+        flist = sorted(glob.glob(input_dir))
+        if len(flist) == 0:
+            print('No file found for {}.'.format(day.strftime("%Y-%b-%d")))
+            continue
+        print(f'{len(flist)} files found for ' + day.strftime("%Y-%b-%d"))
+        arglist = [(f, OUTPATH) for f in flist]
+
+        with ProcessPool() as pool:
+            future = pool.map(main, arglist, timeout=180)
+            iterator = future.result()
+            while True:
+                try:
+                    result = next(iterator)
+                except StopIteration:
+                    break
+                except TimeoutError as error:
+                    print("function took longer than %d seconds" % error.args[1])
+                except ProcessExpired as error:
+                    print("%s. Exit code: %d" % (error, error.exitcode))
+                except Exception as error:
+                    print("function raised %s" % error)
+                    print(error.traceback)  # Python's traceback of remote process
+
