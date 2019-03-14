@@ -19,33 +19,31 @@ Create quicklooks for radar data.
     # - Multiproc figure creation.
 """
 import os
-import sys
-import glob
-import argparse
-import datetime
 
+import crayons
+import matplotlib
+matplotlib.use('Agg')
+
+import pyart
 import netCDF4
-from concurrent.futures import TimeoutError
-from pebble import ProcessPool, ProcessExpired
-
+import matplotlib.pyplot as pl
 
 def plot_quicklook(input_file, figure_path):
     """
-    Plot figure of old/new radar parameters for checking purpose.
+    Plot radar PPIs quicklooks.
 
     Parameters:
     ===========
-        radar:
-            Py-ART radar structure.
-        gatefilter:
-            The Gate filter.
-        radar_date: datetime
-            Datetime stucture of the radar data.
+    radar:
+        Py-ART radar structure.
+    gatefilter:
+        The Gate filter.
     """
-    import pyart
-    import matplotlib.pyplot as pl
+    try:
+        radar = pyart.io.read(input_file)
+    except Exception:
+        raise
 
-    radar = pyart.io.read(input_file)
     gatefilter = pyart.filters.GateFilter(radar)
     gatefilter.exclude_invalid('reflectivity')
     radar_date = netCDF4.num2date(radar.time['data'][0], radar.time['units'])
@@ -77,20 +75,22 @@ def plot_quicklook(input_file, figure_path):
     # Initializing figure.
     with pl.style.context('seaborn-paper'):
         gr = pyart.graph.RadarDisplay(radar)
-        fig, the_ax = pl.subplots(4, 3, figsize=(14, 15), sharex=True, sharey=True)
+        fig, the_ax = pl.subplots(3, 3, figsize=(15, 15), sharex=True, sharey=True)
         the_ax = the_ax.flatten()
         # Plotting reflectivity
-        gr.plot_ppi('total_power', ax=the_ax[0], cmap='pyart_NWSRef')
-        the_ax[0].set_title(gr.generate_title('total_power', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
 
-        gr.plot_ppi('reflectivity', ax=the_ax[1], gatefilter=gatefilter, cmap='pyart_NWSRef')
-        the_ax[1].set_title(gr.generate_title('reflectivity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
+        gr.plot_ppi('reflectivity', ax=the_ax[0], gatefilter=gatefilter, cmap='pyart_NWSRef')
+        the_ax[0].set_title(gr.generate_title('reflectivity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
+
+        gr.plot_ppi('radar_echo_classification', ax=the_ax[1])
+        the_ax[1].set_title(gr.generate_title('radar_echo_classification', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
 
         gr.plot_ppi('radar_estimated_rain_rate', ax=the_ax[2])
         the_ax[2].set_title(gr.generate_title('radar_estimated_rain_rate', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
 
-        gr.plot_ppi('differential_phase', ax=the_ax[3], vmin=-180, vmax=180, cmap='pyart_Wild25')
-        the_ax[3].set_title(gr.generate_title('differential_phase', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
+        gr.plot_ppi('corrected_differential_reflectivity', ax=the_ax[3], gatefilter=gatefilter)
+        the_ax[3].set_title(gr.generate_title('corrected_differential_reflectivity',
+                                              sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
 
         try:
             gr.plot_ppi('corrected_differential_phase', ax=the_ax[4], vmin=-180, vmax=180, cmap='pyart_Wild25', gatefilter=gatefilter)
@@ -115,7 +115,7 @@ def plot_quicklook(input_file, figure_path):
         try:
             gr.plot_ppi('velocity', ax=the_ax[7], gatefilter=gatefilter,
                         cmap='pyart_NWSVel', vmin=-30, vmax=30)
-            the_ax[7].set_title(gr.generate_title('region_dealias_velocity', sweep=0,
+            the_ax[7].set_title(gr.generate_title('unravel_velocity', sweep=0,
                                                   datetime_format='%Y-%m-%dT%H:%M'))
         except KeyError:
             pass
@@ -126,16 +126,6 @@ def plot_quicklook(input_file, figure_path):
                                                   sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
         except KeyError:
             pass
-
-        gr.plot_ppi('differential_reflectivity', ax=the_ax[9])
-        the_ax[9].set_title(gr.generate_title('differential_reflectivity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
-
-        gr.plot_ppi('corrected_differential_reflectivity', ax=the_ax[10], gatefilter=gatefilter)
-        the_ax[10].set_title(gr.generate_title('corrected_differential_reflectivity',
-                                              sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
-
-        gr.plot_ppi('radar_echo_classification', ax=the_ax[11])
-        the_ax[11].set_title(gr.generate_title('radar_echo_classification', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
 
         for ax_sl in the_ax:
             gr.plot_range_rings([50, 100, 150], ax=ax_sl)
@@ -150,94 +140,3 @@ def plot_quicklook(input_file, figure_path):
     del gr  # Releasing memory
 
     return None
-
-
-def main(inargs):
-    input_file, figure_path = inargs
-    plot_quicklook(input_file, figure_path)
-
-    return None
-
-
-if __name__ == '__main__':
-    """
-    Global variables definition.
-    """
-    import matplotlib
-    matplotlib.use('Agg')
-
-    # Parse arguments
-    parser_description = "Processing of radar data from level 1a to level 1b."
-    parser = argparse.ArgumentParser(description=parser_description)
-    parser.add_argument(
-        '-s',
-        '--start-date',
-        dest='start_date',
-        default=None,
-        type=str,
-        help='Starting date.',
-        required=True)
-    parser.add_argument(
-        '-e',
-        '--end-date',
-        dest='end_date',
-        default=None,
-        type=str,
-        help='Ending date.',
-        required=True)
-    parser.add_argument(
-        '-i',
-        '--input',
-        dest='indir',
-        default="/g/data/hj10/cpol_level_1a/ppi/",
-        type=str,
-        help='Input directory containing radar data.')
-    parser.add_argument(
-        '-o',
-        '--output',
-        dest='outdir',
-        default="/g/data/hj10/cpol_level_1b/",
-        type=str,
-        help='Output directory for quicklooks.')
-
-    args = parser.parse_args()
-    START_DATE = args.start_date
-    END_DATE = args.end_date
-    INPATH = args.indir
-    OUTPATH = args.outdir
-
-    try:
-        start = datetime.datetime.strptime(START_DATE, "%Y%m%d")
-        end = datetime.datetime.strptime(END_DATE, "%Y%m%d")
-        if start > end:
-            raise ValueError('End date older than start date.')
-        date_range = [start + datetime.timedelta(days=x) for x in range(0, (end - start).days + 1, )]
-    except ValueError:
-        print("Invalid dates.")
-        sys.exit()
-
-    for day in date_range:
-        input_dir = os.path.join(INPATH, str(day.year), day.strftime("%Y%m%d"), "*.*")
-        flist = sorted(glob.glob(input_dir))
-        if len(flist) == 0:
-            print('No file found for {}.'.format(day.strftime("%Y-%b-%d")))
-            continue
-        print(f'{len(flist)} files found for ' + day.strftime("%Y-%b-%d"))
-        arglist = [(f, OUTPATH) for f in flist]
-
-        with ProcessPool() as pool:
-            future = pool.map(main, arglist, timeout=180)
-            iterator = future.result()
-            while True:
-                try:
-                    result = next(iterator)
-                except StopIteration:
-                    break
-                except TimeoutError as error:
-                    print("function took longer than %d seconds" % error.args[1])
-                except ProcessExpired as error:
-                    print("%s. Exit code: %d" % (error, error.exitcode))
-                except Exception as error:
-                    print("function raised %s" % error)
-                    print(error.traceback)  # Python's traceback of remote process
-
