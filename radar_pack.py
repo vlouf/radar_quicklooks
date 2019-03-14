@@ -60,7 +60,7 @@ def main(inargs):
         import quicklooks
 
         try:
-            quicklooks.radar_gridding(infile, outpath)
+            quicklooks.plot_quicklook(infile, outpath)
         except Exception:
             traceback.print_exc()
             return None
@@ -144,7 +144,7 @@ if __name__ == '__main__':
         arglist = [(f, OUTPATH) for f in flist]
 
         with ProcessPool(max_workers=NCPU) as pool:
-            future = pool.map(main, arglist, timeout=180)
+            future = pool.map(main, arglist, timeout=30)
             iterator = future.result()
             while True:
                 try:
