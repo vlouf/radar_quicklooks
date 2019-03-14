@@ -23,6 +23,7 @@ import datetime
 import warnings
 import traceback
 
+import crayons
 from concurrent.futures import TimeoutError
 from pebble import ProcessPool, ProcessExpired
 
@@ -53,6 +54,9 @@ def main(inargs):
 
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
+        import matplotlib
+        matplotlib.use('Agg')
+
         import quicklooks
 
         try:
@@ -139,21 +143,20 @@ if __name__ == '__main__':
         print(f'{len(flist)} files found for ' + day.strftime("%Y-%b-%d"))
         arglist = [(f, OUTPATH) for f in flist]
 
-        for list_chunk in chunks(arglist, 2 * NCPU):
-            with ProcessPool(max_workers=NCPU) as pool:
-                future = pool.map(main, list_chunk, timeout=180)
-                iterator = future.result()
-                while True:
-                    try:
-                        result = next(iterator)
-                    except StopIteration:
-                        break
-                    except TimeoutError as error:
-                        print("function took longer than %d seconds" % error.args[1])
-                    except ProcessExpired as error:
-                        print("%s. Exit code: %d" % (error, error.exitcode))
-                    except Exception as error:
-                        print("function raised %s" % error)
-                        print(error.traceback)  # Python's traceback of remote process
+        with ProcessPool(max_workers=NCPU) as pool:
+            future = pool.map(main, arglist, timeout=180)
+            iterator = future.result()
+            while True:
+                try:
+                    result = next(iterator)
+                except StopIteration:
+                    break
+                except TimeoutError as error:
+                    print("function took longer than %d seconds" % error.args[1])
+                except ProcessExpired as error:
+                    print("%s. Exit code: %d" % (error, error.exitcode))
+                except Exception as error:
+                    print("function raised %s" % error)
+                    print(error.traceback)  # Python's traceback of remote process
 
-    print(f"Process completed in {time.time() - sttime:0.2f}.")
+    print(crayons.green(f"Process completed in {time.time() - sttime:0.2f}."))

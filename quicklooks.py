@@ -19,14 +19,12 @@ Create quicklooks for radar data.
     # - Multiproc figure creation.
 """
 import os
-
 import crayons
-import matplotlib
-matplotlib.use('Agg')
 
 import pyart
 import netCDF4
 import matplotlib.pyplot as pl
+
 
 def plot_quicklook(input_file, figure_path):
     """
@@ -75,7 +73,7 @@ def plot_quicklook(input_file, figure_path):
     # Initializing figure.
     with pl.style.context('seaborn-paper'):
         gr = pyart.graph.RadarDisplay(radar)
-        fig, the_ax = pl.subplots(3, 3, figsize=(15, 15), sharex=True, sharey=True)
+        fig, the_ax = pl.subplots(3, 3, figsize=(15, 10), sharex=True, sharey=True)
         the_ax = the_ax.flatten()
         # Plotting reflectivity
 
@@ -97,6 +95,7 @@ def plot_quicklook(input_file, figure_path):
             the_ax[4].set_title(gr.generate_title('corrected_differential_phase', sweep=0,
                                                   datetime_format='%Y-%m-%dT%H:%M'))
         except KeyError:
+            print(crayons.red("Problem with 'corrected_differential_phase' field."))
             pass
 
         try:
@@ -104,12 +103,14 @@ def plot_quicklook(input_file, figure_path):
             the_ax[5].set_title(gr.generate_title('corrected_specific_differential_phase', sweep=0,
                                                   datetime_format='%Y-%m-%dT%H:%M'))
         except KeyError:
+            print(crayons.red("Problem with 'corrected_specific_differential_phase' field."))
             pass
 
         try:
             gr.plot_ppi('raw_velocity', ax=the_ax[6], cmap='pyart_NWSVel', vmin=-30, vmax=30)
             the_ax[6].set_title(gr.generate_title('velocity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
         except KeyError:
+            print(crayons.red("Problem with 'raw_velocity' field."))
             pass
 
         try:
@@ -118,6 +119,7 @@ def plot_quicklook(input_file, figure_path):
             the_ax[7].set_title(gr.generate_title('unravel_velocity', sweep=0,
                                                   datetime_format='%Y-%m-%dT%H:%M'))
         except KeyError:
+            print(crayons.red("Problem with 'velocity' field."))
             pass
 
         try:
@@ -125,6 +127,7 @@ def plot_quicklook(input_file, figure_path):
             the_ax[8].set_title(gr.generate_title('cross_correlation_ratio',
                                                   sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
         except KeyError:
+            print(crayons.red("Problem with 'cross_correlation_ratio' field."))
             pass
 
         for ax_sl in the_ax:
@@ -139,4 +142,5 @@ def plot_quicklook(input_file, figure_path):
         pl.close()  # Release memory
     del gr  # Releasing memory
 
+    print(crayons.green(f"{os.path.basename(outfile)} plotted."))
     return None
