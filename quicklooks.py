@@ -4,7 +4,7 @@ Create quicklooks for radar data.
 
 @title: quicklooks.py
 @author: Valentin Louf <valentin.louf@monash.edu>
-@date: 2019
+@date: 2020
 @copyright: Valentin Louf
 @institution: Monash University
 
@@ -22,7 +22,7 @@ import os
 import crayons
 
 import pyart
-import netCDF4
+import cftime
 import matplotlib.pyplot as pl
 
 
@@ -44,7 +44,10 @@ def plot_quicklook(input_file, figure_path):
 
     gatefilter = pyart.filters.GateFilter(radar)
     gatefilter.exclude_invalid('reflectivity')
-    radar_date = netCDF4.num2date(radar.time['data'][0], radar.time['units'])
+    radar_date = cftime.num2date(radar.time['data'][0],
+                                 radar.time['units'],
+                                 only_use_cftime_datetimes=False,
+                                 only_use_python_datetimes=True)
 
     if figure_path is None:
         return None
@@ -70,7 +73,7 @@ def plot_quicklook(input_file, figure_path):
     outfile = radar_date.strftime("%Y%m%d_%H%M") + ".png"
     outfile = os.path.join(outfile_path, outfile)
 
-    # Initializing figure.    
+    # Initializing figure.
     gr = pyart.graph.RadarDisplay(radar)
     fig, the_ax = pl.subplots(3, 3, figsize=(15, 12), sharex=True, sharey=True)
     the_ax = the_ax.flatten()
@@ -98,7 +101,7 @@ def plot_quicklook(input_file, figure_path):
         pass
 
     try:
-        gr.plot_ppi('corrected_specific_differential_phase', ax=the_ax[5], vmin=-2, vmax=5, 
+        gr.plot_ppi('corrected_specific_differential_phase', ax=the_ax[5], vmin=-2, vmax=5,
                     cmap='pyart_Theodore16', gatefilter=gatefilter)
         the_ax[5].set_title(gr.generate_title('corrected_specific_differential_phase', sweep=0,
                                               datetime_format='%Y-%m-%dT%H:%M'))
