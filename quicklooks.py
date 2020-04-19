@@ -44,10 +44,7 @@ def plot_quicklook(input_file, figure_path):
 
     gatefilter = pyart.filters.GateFilter(radar)
     gatefilter.exclude_invalid('reflectivity')
-    radar_date = cftime.num2date(radar.time['data'][0],
-                                 radar.time['units'],
-                                 only_use_cftime_datetimes=False,
-                                 only_use_python_datetimes=True)
+    radar_date = cftime.num2pydate(radar.time['data'][0], radar.time['units'])
 
     if figure_path is None:
         return None
