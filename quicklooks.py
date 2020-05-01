@@ -24,7 +24,18 @@ import crayons
 import pyart
 import cftime
 import matplotlib.pyplot as pl
+import matplotlib.colors as colors
 
+def _adjust_csu_scheme_colorbar_for_pyart(cb):
+    cb.set_ticks(np.arange(.55, 11, .9))
+    cb.ax.set_yticklabels(['None','Drizzle','Rain',
+                           'Ice Crystals','Aggregates','Wet/Melting Snow','Vertically Aligned Ice',
+                           'Low-Density Graupel','High-Density Graupel',
+                           'Hail',
+                           'Big Drops'])
+    cb.ax.set_ylabel('')
+    cb.ax.tick_params(length=0)
+    return cb
 
 def plot_quicklook(input_file, figure_path):
     """
@@ -79,8 +90,18 @@ def plot_quicklook(input_file, figure_path):
     gr.plot_ppi('reflectivity', ax=the_ax[0], gatefilter=gatefilter, cmap='pyart_NWSRef')
     the_ax[0].set_title(gr.generate_title('reflectivity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
 
-    gr.plot_ppi('radar_echo_classification', ax=the_ax[1])
+    #echo classification
+    #create colormap
+    hca_colors = ['White', 'LightBlue', 'SteelBlue', 'MediumBlue',
+          'Plum','MediumPurple','m',
+          'Green','YellowGreen',
+          'Gold',
+          'Red']
+    hca_cmap = colors.ListedColormap(hca_colors)
+    gr.plot_ppi('radar_echo_classification', ax=the_ax[1], cmap=hca_cmap, vmin=0, vmax=10)
     the_ax[1].set_title(gr.generate_title('radar_echo_classification', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
+    #adjust colorbar for classification
+    gr.cbs[1] = _adjust_csu_scheme_colorbar_for_pyart(gr.cbs[1])
 
     gr.plot_ppi('radar_estimated_rain_rate', ax=the_ax[2])
     the_ax[2].set_title(gr.generate_title('radar_estimated_rain_rate', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
