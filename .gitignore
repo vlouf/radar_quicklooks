@@ -100,6 +100,10 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# PBS jobs
+*.pbs
+*.pbs.*
+
 # mypy
 .mypy_cache/
 .vscode/settings.json
