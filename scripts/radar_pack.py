@@ -25,7 +25,7 @@ import traceback
 import crayons
 import dask
 import dask.bag as db
-import matplotlib        
+import matplotlib
 import quicklooks
 
 
@@ -35,7 +35,7 @@ def chunks(l, n):
     From http://stackoverflow.com/a/312464
     """
     for i in range(0, len(l), n):
-        yield l[i:i + n]
+        yield l[i : i + n]
 
 
 def main(infile, outpath):
@@ -50,9 +50,9 @@ def main(infile, outpath):
         Name of the input radar file.
     outpath: str
         Path for saving output data.
-    """    
+    """
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore')        
+        warnings.simplefilter("ignore")
         try:
             quicklooks.plot_quicklook(infile, outpath)
         except Exception:
@@ -62,51 +62,56 @@ def main(infile, outpath):
     return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Global variables definition.
     """
-    matplotlib.use('Agg')
+    matplotlib.use("Agg")
     # Parse arguments
     parser_description = "Processing of radar data from level 1a to level 1b."
     parser = argparse.ArgumentParser(description=parser_description)
     parser.add_argument(
-        '-s',
-        '--start-date',
-        dest='start_date',
+        "-s",
+        "--start-date",
+        dest="start_date",
         default=None,
         type=str,
-        help='Starting date.',
-        required=True)
+        help="Starting date.",
+        required=True,
+    )
     parser.add_argument(
-        '-e',
-        '--end-date',
-        dest='end_date',
+        "-e",
+        "--end-date",
+        dest="end_date",
         default=None,
         type=str,
-        help='Ending date.',
-        required=True)
+        help="Ending date.",
+        required=True,
+    )
     parser.add_argument(
-        '-i',
-        '--input-dir',
-        dest='indir',
+        "-i",
+        "--input-dir",
+        dest="indir",
         default="/g/data/hj10/cpol_level_1b/v2019/ppi",
         type=str,
-        help='Input directory.')
+        help="Input directory.",
+    )
     parser.add_argument(
-        '-o',
-        '--output-dir',
-        dest='outdir',
+        "-o",
+        "--output-dir",
+        dest="outdir",
         default="/g/data/hj10/cpol_level_1b/v2019/quicklooks",
         type=str,
-        help='Output directory.')
+        help="Output directory.",
+    )
     parser.add_argument(
-        '-n',
-        '--ncpu',
-        dest='ncpu',
+        "-n",
+        "--ncpu",
+        dest="ncpu",
         default=16,
         type=int,
-        help='Number of CPUs for multiprocessing.')
+        help="Number of CPUs for multiprocessing.",
+    )
 
     args = parser.parse_args()
     START_DATE = args.start_date
@@ -118,8 +123,11 @@ if __name__ == '__main__':
         start = datetime.datetime.strptime(START_DATE, "%Y%m%d")
         end = datetime.datetime.strptime(END_DATE, "%Y%m%d")
         if start > end:
-            raise ValueError('End date older than start date.')
-        date_range = [start + datetime.timedelta(days=x) for x in range(0, (end - start).days + 1, )]
+            raise ValueError("End date older than start date.")
+        date_range = [
+            start + datetime.timedelta(days=x)
+            for x in range(0, (end - start).days + 1,)
+        ]
     except ValueError:
         print("Invalid dates.")
         sys.exit()
@@ -133,9 +141,9 @@ if __name__ == '__main__':
         input_dir = os.path.join(INPATH, str(day.year), day.strftime("%Y%m%d"), "*.*")
         flist = sorted(glob.glob(input_dir))
         if len(flist) == 0:
-            print('No file found for {}.'.format(day.strftime("%Y-%b-%d")))
+            print("No file found for {}.".format(day.strftime("%Y-%b-%d")))
             continue
-        print(f'{len(flist)} files found for ' + day.strftime("%Y-%b-%d"))
+        print(f"{len(flist)} files found for " + day.strftime("%Y-%b-%d"))
         arglist = [(f, OUTPATH) for f in flist]
         bag = db.from_sequence(arglist).starmap(main)
         bag.compute()
