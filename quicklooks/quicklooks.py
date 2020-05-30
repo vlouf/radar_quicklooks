@@ -51,7 +51,7 @@ def plot_quicklook(input_file, figure_path):
         raise
 
     gatefilter = pyart.filters.GateFilter(radar)
-    gatefilter.exclude_invalid('reflectivity')
+    gatefilter.exclude_invalid('corrected_reflectivity')
     radar_date = cftime.num2pydate(radar.time['data'][0], radar.time['units'])
 
     if figure_path is None:
@@ -84,8 +84,8 @@ def plot_quicklook(input_file, figure_path):
     the_ax = the_ax.flatten()
     # Plotting reflectivity
 
-    gr.plot_ppi('reflectivity', ax=the_ax[0], gatefilter=gatefilter, cmap='pyart_NWSRef')
-    the_ax[0].set_title(gr.generate_title('reflectivity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
+    gr.plot_ppi('corrected_reflectivity', ax=the_ax[0], gatefilter=gatefilter, cmap='pyart_NWSRef')
+    the_ax[0].set_title(gr.generate_title('corrected_reflectivity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
 
     #echo classification
     #create colormap
