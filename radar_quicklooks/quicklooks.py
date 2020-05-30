@@ -12,11 +12,6 @@ Create quicklooks for radar data.
     :toctree: generated/
 
     plot_quicklook
-
-    # TODO:
-    # - List files (argparse input directory?).
-    # - Generate output directory (argparse output root directory?).
-    # - Multiproc figure creation.
 """
 import os
 import crayons
@@ -25,6 +20,7 @@ import pyart
 import cftime
 import matplotlib.pyplot as pl
 import matplotlib.colors as colors
+
 
 def _adjust_csu_scheme_colorbar_for_pyart(cb):
     cb.set_ticks(np.arange(.55, 11, .9))
@@ -36,6 +32,7 @@ def _adjust_csu_scheme_colorbar_for_pyart(cb):
     cb.ax.set_ylabel('')
     cb.ax.tick_params(length=0)
     return cb
+
 
 def plot_quicklook(input_file, figure_path):
     """
@@ -92,11 +89,17 @@ def plot_quicklook(input_file, figure_path):
 
     #echo classification
     #create colormap
-    hca_colors = ['White', 'LightBlue', 'SteelBlue', 'MediumBlue',
-          'Plum','MediumPurple','m',
-          'Green','YellowGreen',
-          'Gold',
-          'Red']
+    hca_colors = ['White',
+                  'LightBlue',
+                  'SteelBlue',
+                  'MediumBlue',
+                  'Plum',
+                  'MediumPurple',
+                  'm',
+                  'Green',
+                  'YellowGreen',
+                  'Gold',
+                  'Red']
     hca_cmap = colors.ListedColormap(hca_colors)
     gr.plot_ppi('radar_echo_classification', ax=the_ax[1], cmap=hca_cmap, vmin=0, vmax=10)
     the_ax[1].set_title(gr.generate_title('radar_echo_classification', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
@@ -165,4 +168,5 @@ def plot_quicklook(input_file, figure_path):
     del gr  # Releasing memory
 
     print(crayons.green(f"{os.path.basename(outfile)} plotted."))
+
     return None

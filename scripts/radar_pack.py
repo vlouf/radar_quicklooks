@@ -13,7 +13,6 @@ Turning radar PPIs into Cartesian grids.
     chunks
     main
 """
-# Python Standard Library
 import os
 import sys
 import glob
