@@ -16,7 +16,7 @@ AUTHOR = 'Valentin Louf'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "arm_pyart", "cftime", "matplotlib", 'crayons'
+    "arm_pyart", "cftime", "matplotlib", 'crayons', 'dask',
 ]
 
 # The rest you shouldn't have to touch too much :)
