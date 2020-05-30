@@ -8,15 +8,15 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'gpmmatch'
-DESCRIPTION = 'Volume matching of ground radar and GPM satellite data.'
-URL = 'https://github.com/vlouf/gpmmatch'
+NAME = 'radar_quicklooks'
+DESCRIPTION = 'Plot radar quicklooks using Py-ART.'
+URL = 'https://github.com/vlouf/radar_quicklooks'
 EMAIL = 'valentin.louf@bom.gov.au'
 AUTHOR = 'Valentin Louf'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "arm_pyart", "numpy", "netCDF4", "h5py", "pyproj", 'xarray', 'pandas', 'scipy'
+    "arm_pyart", "cftime", "matplotlib", 'crayons'
 ]
 
 # The rest you shouldn't have to touch too much :)
@@ -67,14 +67,14 @@ class PublishCommand(Command):
 # Where the magic happens:
 setup(
     name=NAME,
-    version='1.0.0',
+    version='0.9.0',
     description=DESCRIPTION,
     long_description=long_description,
     author=AUTHOR,
     author_email=EMAIL,
     url=URL,
     packages=find_packages(exclude=('tests', 'example', 'notebooks')),
-    package_data={'gpmmatch': ['data/radar_site_list.csv']},
+    # package_data={'gpmmatch': ['data/radar_site_list.csv']},
     install_requires=REQUIRED,
     include_package_data=True,
     license='ISC',
