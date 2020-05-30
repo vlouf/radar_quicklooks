@@ -2,9 +2,9 @@
 Radar quicklooks.
 Create quicklooks for radar data.
 
-@title: quicklooks.py
+@title: quicklooks
 @author: Valentin Louf <valentin.louf@monash.edu>
-@date: 2020
+@date: 30/05/2020
 @copyright: Valentin Louf
 @institution: Monash University
 
@@ -15,6 +15,7 @@ Create quicklooks for radar data.
 """
 import os
 import crayons
+import traceback
 
 import pyart
 import cftime
@@ -24,6 +25,9 @@ import matplotlib.colors as colors
 
 
 def _adjust_csu_scheme_colorbar_for_pyart(cb):
+    """
+    Generate colorbar for the hydrometeor classification.
+    """
     cb.set_ticks(np.arange(.55, 11, .9))
     cb.ax.set_yticklabels(['None','Drizzle','Rain',
                            'Ice Crystals','Aggregates','Wet/Melting Snow','Vertically Aligned Ice',
@@ -35,21 +39,23 @@ def _adjust_csu_scheme_colorbar_for_pyart(cb):
     return cb
 
 
-def plot_quicklook(input_file, figure_path):
+def plot_quicklook(input_file: str, figure_path: str):
     """
     Plot radar PPIs quicklooks.
 
     Parameters:
     ===========
-    radar:
-        Py-ART radar structure.
-    gatefilter:
-        The Gate filter.
+    input_file: str
+        Input radar file.
+    figure_path: str
+        Output path for the figure.
     """
     try:
         radar = pyart.io.read(input_file)
     except Exception:
-        raise
+        print(f'Could not process file {input_file}')
+        traceback.print_exc()
+        return None
 
     gatefilter = pyart.filters.GateFilter(radar)
     gatefilter.exclude_invalid('corrected_reflectivity')
@@ -81,7 +87,7 @@ def plot_quicklook(input_file, figure_path):
 
     # Initializing figure.
     gr = pyart.graph.RadarDisplay(radar)
-    fig, the_ax = pl.subplots(3, 3, figsize=(15, 12), sharex=True, sharey=True)
+    fig, the_ax = pl.subplots(3, 3, figsize=(16, 12), sharex=True, sharey=True)
     the_ax = the_ax.flatten()
     # Plotting reflectivity
 
@@ -132,16 +138,16 @@ def plot_quicklook(input_file, figure_path):
         pass
 
     try:
-        gr.plot_ppi('raw_velocity', ax=the_ax[6], cmap='pyart_NWSVel', vmin=-30, vmax=30)
+        gr.plot_ppi('velocity', ax=the_ax[6], cmap='pyart_NWSVel', vmin=-30, vmax=30)
         the_ax[6].set_title(gr.generate_title('velocity', sweep=0, datetime_format='%Y-%m-%dT%H:%M'))
     except KeyError:
         print(crayons.red("Problem with 'raw_velocity' field."))
         pass
 
     try:
-        gr.plot_ppi('velocity', ax=the_ax[7], gatefilter=gatefilter,
+        gr.plot_ppi('corrected_velocity', ax=the_ax[7], gatefilter=gatefilter,
                     cmap='pyart_NWSVel', vmin=-30, vmax=30)
-        the_ax[7].set_title(gr.generate_title('velocity', sweep=0,
+        the_ax[7].set_title(gr.generate_title('UNRAVEL_velocity', sweep=0,
                                               datetime_format='%Y-%m-%dT%H:%M'))
     except KeyError as error:
         print(error)
