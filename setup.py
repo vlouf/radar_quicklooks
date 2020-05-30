@@ -7,8 +7,9 @@ from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
 
+
 # Package meta-data.
-NAME = 'radar_quicklooks'
+NAME = 'quicklooks'
 DESCRIPTION = 'Plot radar quicklooks using Py-ART.'
 URL = 'https://github.com/vlouf/radar_quicklooks'
 EMAIL = 'valentin.louf@bom.gov.au'

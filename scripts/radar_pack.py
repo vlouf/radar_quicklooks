@@ -26,7 +26,7 @@ import crayons
 import dask
 import dask.bag as db
 import matplotlib        
-import radar_quicklooks as quicklooks
+import quicklooks
 
 
 def chunks(l, n):
