@@ -23,8 +23,10 @@ import warnings
 import traceback
 
 import crayons
-from concurrent.futures import TimeoutError
-from pebble import ProcessPool, ProcessExpired
+import dask
+import dask.bag as db
+import matplotlib        
+import radar_quicklooks as quicklooks
 
 
 def chunks(l, n):
@@ -36,7 +38,7 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-def main(inargs):
+def main(infile, outpath):
     """
     It calls the production line and manages it. Buffer function that is used
     to catch any problem with the processing line without screwing the whole
@@ -48,16 +50,9 @@ def main(inargs):
         Name of the input radar file.
     outpath: str
         Path for saving output data.
-    """
-    infile, outpath = inargs
-
+    """    
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore')
-        import matplotlib
-        matplotlib.use('Agg')
-
-        import quicklooks
-
+        warnings.simplefilter('ignore')        
         try:
             quicklooks.plot_quicklook(infile, outpath)
         except Exception:
@@ -71,6 +66,7 @@ if __name__ == '__main__':
     """
     Global variables definition.
     """
+    matplotlib.use('Agg')
     # Parse arguments
     parser_description = "Processing of radar data from level 1a to level 1b."
     parser = argparse.ArgumentParser(description=parser_description)
@@ -141,21 +137,7 @@ if __name__ == '__main__':
             continue
         print(f'{len(flist)} files found for ' + day.strftime("%Y-%b-%d"))
         arglist = [(f, OUTPATH) for f in flist]
-
-        with ProcessPool(max_workers=NCPU) as pool:
-            future = pool.map(main, arglist, timeout=30)
-            iterator = future.result()
-            while True:
-                try:
-                    result = next(iterator)
-                except StopIteration:
-                    break
-                except TimeoutError as error:
-                    print("function took longer than %d seconds" % error.args[1])
-                except ProcessExpired as error:
-                    print("%s. Exit code: %d" % (error, error.exitcode))
-                except Exception as error:
-                    print("function raised %s" % error)
-                    print(error.traceback)  # Python's traceback of remote process
+        bag = db.from_sequence(arglist).starmap(main)
+        bag.compute()
 
     print(crayons.green(f"Process completed in {time.time() - sttime:0.2f}."))
