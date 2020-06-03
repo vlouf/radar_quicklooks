@@ -4,7 +4,7 @@ Create quicklooks for radar data.
 
 @title: quicklooks
 @author: Valentin Louf <valentin.louf@monash.edu>
-@date: 30/05/2020
+@date: 04/06/2020
 @copyright: Valentin Louf
 @institution: Monash University
 
@@ -61,7 +61,7 @@ def plot_quicklook(input_file: str, figure_path: str):
         Output path for the figure.
     """
     try:
-        radar = pyart.io.read(input_file)
+        radar = pyart.io.read(input_file, delay_field_loading=True)
     except Exception:
         print(f"Could not process file {input_file}")
         traceback.print_exc()
