@@ -241,7 +241,7 @@ def plot_quicklook(input_file: str, figure_path: str):
         pass
 
     for ax_sl in the_ax:
-        gr.plot_range_rings([50, 100, 150], ax=ax_sl)
+        gr.plot_range_rings([50, 100, 150], ax=ax_sl, lw=1, col='#CDCDCD')
         ax_sl.set_aspect(1)
         ax_sl.set_xlim(-150, 150)
         ax_sl.set_ylim(-150, 150)
