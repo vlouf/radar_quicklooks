@@ -97,19 +97,39 @@ def plot_quicklook(input_file: str, figure_path: str):
         except FileExistsError:
             pass
 
-    # Checking if figure already exists.
     outfile = radar_date.strftime("%Y%m%d_%H%M") + ".png"
     outfile = os.path.join(outfile_path, outfile)
+    outfile_small = outfile.replace(".png", "_small.png")
 
-    # Initializing figure.
+    # Initialize figure
     gr = pyart.graph.RadarDisplay(radar)
+
+    # Small one (refl + rain)
+    fig, ax = pl.subplots(1, 2, figsize=(10, 4), sharex=True, sharey=True)
+    ax = ax.flatten()
+    gr.plot_ppi("corrected_reflectivity", ax=ax[0], gatefilter=gatefilter, cmap="pyart_NWSRef")
+    ax[0].set_title(gr.generate_title("corrected_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
+
+    gr.plot_ppi("radar_estimated_rain_rate", ax=ax[1], norm=LogNorm(1e-2, 1e2))
+    ax[1].set_title(gr.generate_title("radar_estimated_rain_rate", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
+
+    for ax_sl in ax:
+        gr.plot_range_rings([50, 100, 150], ax=ax_sl, lw=1, col="#CDCDCD")
+        ax_sl.set_aspect(1)
+        ax_sl.set_xlim(-150, 150)
+        ax_sl.set_ylim(-150, 150)
+
+    fig.tight_layout()
+    pl.savefig(outfile_small)  # Saving figure.
+    fig.clf()  # Clear figure
+    pl.close()  # Release memory
+
+    # Bigger figure.
     fig, ax = pl.subplots(3, 3, figsize=(16, 12), sharex=True, sharey=True, constrained_layout=True)
     ax = ax.flatten()
     # Plotting reflectivity
 
-    gr.plot_ppi(
-        "corrected_reflectivity", ax=ax[0], gatefilter=gatefilter, cmap="pyart_NWSRef",
-    )
+    gr.plot_ppi("corrected_reflectivity", ax=ax[0], gatefilter=gatefilter, cmap="pyart_NWSRef")
     ax[0].set_title(gr.generate_title("corrected_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
 
     gr.plot_ppi("radar_estimated_rain_rate", ax=ax[1], norm=LogNorm(1e-2, 1e2))
