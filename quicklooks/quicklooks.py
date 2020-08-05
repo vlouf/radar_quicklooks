@@ -103,7 +103,7 @@ def plot_quicklook(input_file: str, figure_path: str):
 
     # Initializing figure.
     gr = pyart.graph.RadarDisplay(radar)
-    fig, the_ax = pl.subplots(3, 3, figsize=(16, 12), sharex=True, sharey=True)
+    fig, the_ax = pl.subplots(3, 3, figsize=(16, 12), sharex=True, sharey=True, constrained_layout=True)
     the_ax = the_ax.flatten()
     # Plotting reflectivity
 
@@ -246,8 +246,7 @@ def plot_quicklook(input_file: str, figure_path: str):
         ax_sl.set_aspect(1)
         ax_sl.set_xlim(-150, 150)
         ax_sl.set_ylim(-150, 150)
-
-    pl.tight_layout()
+    
     pl.savefig(outfile)  # Saving figure.
     fig.clf()  # Clear figure
     pl.close()  # Release memory
