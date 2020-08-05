@@ -119,6 +119,13 @@ def plot_quicklook(input_file: str, figure_path: str):
         )
     )
 
+    gr.plot_ppi("radar_estimated_rain_rate", ax=the_ax[1], norm=LogNorm(1e-2, 1e2))
+    the_ax[1].set_title(
+        gr.generate_title(
+            "radar_estimated_rain_rate", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
+        )
+    )
+
     # echo classification
     # create colormap
     hca_colors = [
@@ -135,23 +142,17 @@ def plot_quicklook(input_file: str, figure_path: str):
         "Red",
     ]
     hca_cmap = colors.ListedColormap(hca_colors)
+
     gr.plot_ppi(
-        "radar_echo_classification", ax=the_ax[1], cmap=hca_cmap, vmin=0, vmax=10
+        "radar_echo_classification", ax=the_ax[2], cmap=hca_cmap, vmin=0, vmax=10
     )
-    the_ax[1].set_title(
+    the_ax[2].set_title(
         gr.generate_title(
             "radar_echo_classification", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
         )
     )
     # adjust colorbar for classification
-    gr.cbs[1] = _adjust_csu_scheme_colorbar_for_pyart(gr.cbs[1])
-
-    gr.plot_ppi("radar_estimated_rain_rate", ax=the_ax[2])
-    the_ax[2].set_title(
-        gr.generate_title(
-            "radar_estimated_rain_rate", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
-        )
-    )
+    gr.cbs[2] = _adjust_csu_scheme_colorbar_for_pyart(gr.cbs[2])
 
     gr.plot_ppi(
         "corrected_differential_reflectivity", ax=the_ax[3], gatefilter=gatefilter
