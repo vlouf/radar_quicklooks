@@ -103,17 +103,17 @@ def plot_quicklook(input_file: str, figure_path: str):
 
     # Initializing figure.
     gr = pyart.graph.RadarDisplay(radar)
-    fig, the_ax = pl.subplots(3, 3, figsize=(16, 12), sharex=True, sharey=True, constrained_layout=True)
-    the_ax = the_ax.flatten()
+    fig, ax = pl.subplots(3, 3, figsize=(16, 12), sharex=True, sharey=True, constrained_layout=True)
+    ax = ax.flatten()
     # Plotting reflectivity
 
     gr.plot_ppi(
-        "corrected_reflectivity", ax=the_ax[0], gatefilter=gatefilter, cmap="pyart_NWSRef",
+        "corrected_reflectivity", ax=ax[0], gatefilter=gatefilter, cmap="pyart_NWSRef",
     )
-    the_ax[0].set_title(gr.generate_title("corrected_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
+    ax[0].set_title(gr.generate_title("corrected_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
 
-    gr.plot_ppi("radar_estimated_rain_rate", ax=the_ax[1], norm=LogNorm(1e-2, 1e2))
-    the_ax[1].set_title(gr.generate_title("radar_estimated_rain_rate", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
+    gr.plot_ppi("radar_estimated_rain_rate", ax=ax[1], norm=LogNorm(1e-2, 1e2))
+    ax[1].set_title(gr.generate_title("radar_estimated_rain_rate", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
 
     # echo classification
     # create colormap
@@ -132,26 +132,26 @@ def plot_quicklook(input_file: str, figure_path: str):
     ]
     hca_cmap = colors.ListedColormap(hca_colors)
 
-    gr.plot_ppi("radar_echo_classification", ax=the_ax[2], cmap=hca_cmap, vmin=0, vmax=10)
-    the_ax[2].set_title(gr.generate_title("radar_echo_classification", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
+    gr.plot_ppi("radar_echo_classification", ax=ax[2], cmap=hca_cmap, vmin=0, vmax=10)
+    ax[2].set_title(gr.generate_title("radar_echo_classification", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
     # adjust colorbar for classification
     gr.cbs[2] = _adjust_csu_scheme_colorbar_for_pyart(gr.cbs[2])
 
-    gr.plot_ppi("corrected_differential_reflectivity", ax=the_ax[3], gatefilter=gatefilter)
-    the_ax[3].set_title(
+    gr.plot_ppi("corrected_differential_reflectivity", ax=ax[3], gatefilter=gatefilter)
+    ax[3].set_title(
         gr.generate_title("corrected_differential_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M",)
     )
 
     try:
         gr.plot_ppi(
             "corrected_differential_phase",
-            ax=the_ax[4],
+            ax=ax[4],
             vmin=-180,
             vmax=180,
             cmap="pyart_Wild25",
             gatefilter=gatefilter,
         )
-        the_ax[4].set_title(
+        ax[4].set_title(
             gr.generate_title("corrected_differential_phase", sweep=0, datetime_format="%Y-%m-%dT%H:%M",)
         )
     except KeyError:
@@ -161,13 +161,13 @@ def plot_quicklook(input_file: str, figure_path: str):
     try:
         gr.plot_ppi(
             "corrected_specific_differential_phase",
-            ax=the_ax[5],
+            ax=ax[5],
             vmin=-2,
             vmax=5,
             cmap="pyart_Theodore16",
             gatefilter=gatefilter,
         )
-        the_ax[5].set_title(
+        ax[5].set_title(
             gr.generate_title("corrected_specific_differential_phase", sweep=0, datetime_format="%Y-%m-%dT%H:%M",)
         )
     except KeyError:
@@ -175,15 +175,15 @@ def plot_quicklook(input_file: str, figure_path: str):
         pass
 
     try:
-        gr.plot_ppi("velocity", ax=the_ax[6], cmap="pyart_NWSVel", vmin=-30, vmax=30)
-        the_ax[6].set_title(gr.generate_title("velocity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
+        gr.plot_ppi("velocity", ax=ax[6], cmap="pyart_BuDRd18", vmin=-30, vmax=30)
+        ax[6].set_title(gr.generate_title("velocity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
     except KeyError:
         print(crayons.red("Problem with 'raw_velocity' field."))
         pass
 
     try:
         gr.plot_ppi(
-            "corrected_velocity", ax=the_ax[7], gatefilter=gatefilter, cmap="pyart_NWSVel", vmin=-30, vmax=30,
+            "corrected_velocity", ax=ax[7], gatefilter=gatefilter, cmap="pyart_BuDRd18", vmin=-30, vmax=30,
         )
     except KeyError as error:
         print(error)
@@ -191,13 +191,13 @@ def plot_quicklook(input_file: str, figure_path: str):
         pass
 
     try:
-        gr.plot_ppi("cross_correlation_ratio", ax=the_ax[8], vmin=0.5, vmax=1.05)
-        the_ax[8].set_title(gr.generate_title("cross_correlation_ratio", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
+        gr.plot_ppi("cross_correlation_ratio", ax=ax[8], vmin=0.5, vmax=1.05)
+        ax[8].set_title(gr.generate_title("cross_correlation_ratio", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
     except KeyError:
         print(crayons.red("Problem with 'cross_correlation_ratio' field."))
         pass
 
-    for ax_sl in the_ax:
+    for ax_sl in ax:
         gr.plot_range_rings([50, 100, 150], ax=ax_sl, lw=1, col="#CDCDCD")
         ax_sl.set_aspect(1)
         ax_sl.set_xlim(-150, 150)
