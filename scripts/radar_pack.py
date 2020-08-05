@@ -26,6 +26,7 @@ import traceback
 import crayons
 import dask
 import dask.bag as db
+import matplotlib
 
 
 def chunks(l, n):
