@@ -23,6 +23,8 @@ import numpy as np
 import matplotlib.pyplot as pl
 import matplotlib.colors as colors
 
+from matplotlib.colors import LogNorm
+
 
 def _adjust_csu_scheme_colorbar_for_pyart(cb):
     """
