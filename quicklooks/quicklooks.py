@@ -66,6 +66,12 @@ def plot_quicklook(input_file: str, figure_path: str):
         print(f"Could not process file {input_file}")
         traceback.print_exc()
         return None
+    
+    try:
+        radar.fields['velocity']['standard_name'] = 'radial_velocity'
+        radar.fields['corrected_velocity']['standard_name'] = 'corrected_radial_velocity'
+    except Exception:
+        pass
 
     gatefilter = pyart.filters.GateFilter(radar)
     gatefilter.exclude_invalid("corrected_reflectivity")
