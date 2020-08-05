@@ -4,9 +4,9 @@ Create quicklooks for radar data.
 
 @title: quicklooks
 @author: Valentin Louf <valentin.louf@monash.edu>
-@date: 04/06/2020
+@date: 05/08/2020
 @copyright: Valentin Louf
-@institution: Monash University
+@institution: Monash University and Australian Bureau of Meteorology
 
 .. autosummary::
     :toctree: generated/
@@ -66,10 +66,10 @@ def plot_quicklook(input_file: str, figure_path: str):
         print(f"Could not process file {input_file}")
         traceback.print_exc()
         return None
-    
+
     try:
-        radar.fields['velocity']['standard_name'] = 'radial_velocity'
-        radar.fields['corrected_velocity']['standard_name'] = 'corrected_radial_velocity'
+        radar.fields["velocity"]["standard_name"] = "radial_velocity"
+        radar.fields["corrected_velocity"]["standard_name"] = "corrected_radial_velocity"
     except Exception:
         pass
 
@@ -108,23 +108,12 @@ def plot_quicklook(input_file: str, figure_path: str):
     # Plotting reflectivity
 
     gr.plot_ppi(
-        "corrected_reflectivity",
-        ax=the_ax[0],
-        gatefilter=gatefilter,
-        cmap="pyart_NWSRef",
+        "corrected_reflectivity", ax=the_ax[0], gatefilter=gatefilter, cmap="pyart_NWSRef",
     )
-    the_ax[0].set_title(
-        gr.generate_title(
-            "corrected_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
-        )
-    )
+    the_ax[0].set_title(gr.generate_title("corrected_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
 
     gr.plot_ppi("radar_estimated_rain_rate", ax=the_ax[1], norm=LogNorm(1e-2, 1e2))
-    the_ax[1].set_title(
-        gr.generate_title(
-            "radar_estimated_rain_rate", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
-        )
-    )
+    the_ax[1].set_title(gr.generate_title("radar_estimated_rain_rate", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
 
     # echo classification
     # create colormap
@@ -143,26 +132,14 @@ def plot_quicklook(input_file: str, figure_path: str):
     ]
     hca_cmap = colors.ListedColormap(hca_colors)
 
-    gr.plot_ppi(
-        "radar_echo_classification", ax=the_ax[2], cmap=hca_cmap, vmin=0, vmax=10
-    )
-    the_ax[2].set_title(
-        gr.generate_title(
-            "radar_echo_classification", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
-        )
-    )
+    gr.plot_ppi("radar_echo_classification", ax=the_ax[2], cmap=hca_cmap, vmin=0, vmax=10)
+    the_ax[2].set_title(gr.generate_title("radar_echo_classification", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
     # adjust colorbar for classification
     gr.cbs[2] = _adjust_csu_scheme_colorbar_for_pyart(gr.cbs[2])
 
-    gr.plot_ppi(
-        "corrected_differential_reflectivity", ax=the_ax[3], gatefilter=gatefilter
-    )
+    gr.plot_ppi("corrected_differential_reflectivity", ax=the_ax[3], gatefilter=gatefilter)
     the_ax[3].set_title(
-        gr.generate_title(
-            "corrected_differential_reflectivity",
-            sweep=0,
-            datetime_format="%Y-%m-%dT%H:%M",
-        )
+        gr.generate_title("corrected_differential_reflectivity", sweep=0, datetime_format="%Y-%m-%dT%H:%M",)
     )
 
     try:
@@ -175,11 +152,7 @@ def plot_quicklook(input_file: str, figure_path: str):
             gatefilter=gatefilter,
         )
         the_ax[4].set_title(
-            gr.generate_title(
-                "corrected_differential_phase",
-                sweep=0,
-                datetime_format="%Y-%m-%dT%H:%M",
-            )
+            gr.generate_title("corrected_differential_phase", sweep=0, datetime_format="%Y-%m-%dT%H:%M",)
         )
     except KeyError:
         print(crayons.red("Problem with 'corrected_differential_phase' field."))
@@ -195,35 +168,22 @@ def plot_quicklook(input_file: str, figure_path: str):
             gatefilter=gatefilter,
         )
         the_ax[5].set_title(
-            gr.generate_title(
-                "corrected_specific_differential_phase",
-                sweep=0,
-                datetime_format="%Y-%m-%dT%H:%M",
-            )
+            gr.generate_title("corrected_specific_differential_phase", sweep=0, datetime_format="%Y-%m-%dT%H:%M",)
         )
     except KeyError:
-        print(
-            crayons.red("Problem with 'corrected_specific_differential_phase' field.")
-        )
+        print(crayons.red("Problem with 'corrected_specific_differential_phase' field."))
         pass
 
     try:
         gr.plot_ppi("velocity", ax=the_ax[6], cmap="pyart_NWSVel", vmin=-30, vmax=30)
-        the_ax[6].set_title(
-            gr.generate_title("velocity", sweep=0, datetime_format="%Y-%m-%dT%H:%M")
-        )
+        the_ax[6].set_title(gr.generate_title("velocity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
     except KeyError:
         print(crayons.red("Problem with 'raw_velocity' field."))
         pass
 
     try:
         gr.plot_ppi(
-            "corrected_velocity",
-            ax=the_ax[7],
-            gatefilter=gatefilter,
-            cmap="pyart_NWSVel",
-            vmin=-30,
-            vmax=30,
+            "corrected_velocity", ax=the_ax[7], gatefilter=gatefilter, cmap="pyart_NWSVel", vmin=-30, vmax=30,
         )
     except KeyError as error:
         print(error)
@@ -232,21 +192,17 @@ def plot_quicklook(input_file: str, figure_path: str):
 
     try:
         gr.plot_ppi("cross_correlation_ratio", ax=the_ax[8], vmin=0.5, vmax=1.05)
-        the_ax[8].set_title(
-            gr.generate_title(
-                "cross_correlation_ratio", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
-            )
-        )
+        the_ax[8].set_title(gr.generate_title("cross_correlation_ratio", sweep=0, datetime_format="%Y-%m-%dT%H:%M"))
     except KeyError:
         print(crayons.red("Problem with 'cross_correlation_ratio' field."))
         pass
 
     for ax_sl in the_ax:
-        gr.plot_range_rings([50, 100, 150], ax=ax_sl, lw=1, col='#CDCDCD')
+        gr.plot_range_rings([50, 100, 150], ax=ax_sl, lw=1, col="#CDCDCD")
         ax_sl.set_aspect(1)
         ax_sl.set_xlim(-150, 150)
         ax_sl.set_ylim(-150, 150)
-    
+
     pl.savefig(outfile)  # Saving figure.
     fig.clf()  # Clear figure
     pl.close()  # Release memory
