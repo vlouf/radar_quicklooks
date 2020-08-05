@@ -218,11 +218,6 @@ def plot_quicklook(input_file: str, figure_path: str):
             vmin=-30,
             vmax=30,
         )
-        the_ax[7].set_title(
-            gr.generate_title(
-                "UNRAVEL_velocity", sweep=0, datetime_format="%Y-%m-%dT%H:%M"
-            )
-        )
     except KeyError as error:
         print(error)
         print(crayons.red("Problem with 'velocity' field."))
