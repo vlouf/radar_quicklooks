@@ -144,16 +144,9 @@ def plot_quicklook(input_file: str, figure_path: str):
 
     try:
         gr.plot_ppi(
-            "corrected_differential_phase",
-            ax=ax[4],
-            vmin=-180,
-            vmax=180,
-            cmap="pyart_Wild25",
-            gatefilter=gatefilter,
+            "corrected_differential_phase", ax=ax[4], vmin=-180, vmax=180, cmap="pyart_Wild25", gatefilter=gatefilter,
         )
-        ax[4].set_title(
-            gr.generate_title("corrected_differential_phase", sweep=0, datetime_format="%Y-%m-%dT%H:%M",)
-        )
+        ax[4].set_title(gr.generate_title("corrected_differential_phase", sweep=0, datetime_format="%Y-%m-%dT%H:%M",))
     except KeyError:
         print(crayons.red("Problem with 'corrected_differential_phase' field."))
         pass
