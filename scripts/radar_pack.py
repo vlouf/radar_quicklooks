@@ -3,8 +3,8 @@ Turning radar PPIs into Cartesian grids.
 
 @title: radar_grids
 @author: Valentin Louf <valentin.louf@monash.edu>
-@institution: Monash University
-@date: 11/03/2019
+@institution: Monash University and Bureau of Meteorology
+@date: 05/08/2020
 @version: 1
 
 .. autosummary::
@@ -13,6 +13,7 @@ Turning radar PPIs into Cartesian grids.
     chunks
     main
 """
+import gc
 import os
 import sys
 import glob
@@ -25,8 +26,6 @@ import traceback
 import crayons
 import dask
 import dask.bag as db
-import matplotlib
-import quicklooks
 
 
 def chunks(l, n):
@@ -51,6 +50,7 @@ def main(infile, outpath):
     outpath: str
         Path for saving output data.
     """
+    import quicklooks
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         try:
@@ -59,6 +59,7 @@ def main(infile, outpath):
             traceback.print_exc()
             return None
 
+    gc.collect()
     return None
 
 
@@ -71,28 +72,16 @@ if __name__ == "__main__":
     parser_description = "Processing of radar data from level 1a to level 1b."
     parser = argparse.ArgumentParser(description=parser_description)
     parser.add_argument(
-        "-s",
-        "--start-date",
-        dest="start_date",
-        default=None,
-        type=str,
-        help="Starting date.",
-        required=True,
+        "-s", "--start-date", dest="start_date", default=None, type=str, help="Starting date.", required=True,
     )
     parser.add_argument(
-        "-e",
-        "--end-date",
-        dest="end_date",
-        default=None,
-        type=str,
-        help="Ending date.",
-        required=True,
+        "-e", "--end-date", dest="end_date", default=None, type=str, help="Ending date.", required=True,
     )
     parser.add_argument(
         "-i",
         "--input-dir",
         dest="indir",
-        default="/g/data/hj10/cpol_level_1b/v2019/ppi",
+        default="/g/data/hj10/cpol_level_1b/v2020/ppi",
         type=str,
         help="Input directory.",
     )
@@ -100,17 +89,9 @@ if __name__ == "__main__":
         "-o",
         "--output-dir",
         dest="outdir",
-        default="/g/data/hj10/cpol_level_1b/v2019/quicklooks",
+        default="/g/data/hj10/cpol_level_1b/v2020/quicklooks",
         type=str,
         help="Output directory.",
-    )
-    parser.add_argument(
-        "-n",
-        "--ncpu",
-        dest="ncpu",
-        default=16,
-        type=int,
-        help="Number of CPUs for multiprocessing.",
     )
 
     args = parser.parse_args()
@@ -118,16 +99,12 @@ if __name__ == "__main__":
     END_DATE = args.end_date
     INPATH = args.indir
     OUTPATH = args.outdir
-    NCPU = args.ncpu
     try:
         start = datetime.datetime.strptime(START_DATE, "%Y%m%d")
         end = datetime.datetime.strptime(END_DATE, "%Y%m%d")
         if start > end:
             raise ValueError("End date older than start date.")
-        date_range = [
-            start + datetime.timedelta(days=x)
-            for x in range(0, (end - start).days + 1,)
-        ]
+        date_range = [start + datetime.timedelta(days=x) for x in range(0, (end - start).days + 1,)]
     except ValueError:
         print("Invalid dates.")
         sys.exit()
