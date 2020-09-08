@@ -4,7 +4,7 @@ Create quicklooks for radar data.
 
 @title: quicklooks
 @author: Valentin Louf <valentin.louf@monash.edu>
-@date: 05/08/2020
+@date: 08/09/2020
 @copyright: Valentin Louf
 @institution: Monash University and Australian Bureau of Meteorology
 
@@ -30,7 +30,7 @@ def _adjust_csu_scheme_colorbar_for_pyart(cb):
     """
     Generate colorbar for the hydrometeor classification.
     """
-    cb.set_ticks(np.arange(0.55, 11, 0.9))
+    cb.set_ticks(np.linspace(0.5, 10.5, 11))
     cb.ax.set_yticklabels(
         [
             "None",
